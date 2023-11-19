@@ -15,19 +15,26 @@ public class SpoonUtil {
   /**
    * 使用spoon抽取代码
    *
-   * @param code      原始代码字符串
+   * @param path      原始代码路径
    * @param className 需要找的类名字
    * @return 抽取的类的名字
    */
-  public static String spoonExtractClass(String code, String className) {
-    // Launcher只能解析单个类
-    CtClass<?> ctClass = Launcher.parseClass(code);
-//    System.out.println(ctClass.getQualifiedName());
-    CtClass<?> res;
-    if (ctClass.getQualifiedName().equals(className)) {
-      res = ctClass;
-    } else {
-      res = ctClass.getNestedType(className.substring(className.lastIndexOf(".") + 1));
+  public static String spoonExtractClass(String path, String className) {
+    // 创建 Spoon Launcher
+    Launcher launcher = new Launcher();
+    // 设置要解析的源代码路径
+    launcher.addInputResource(path);
+    // 执行 Spoon 解析
+    launcher.run();
+    // 获取 Spoon 模型
+    CtModel model = launcher.getModel();
+    CtClass<?> res = null;
+    for (CtClass<?> ctClass : model.getElements(new spoon.reflect.visitor.filter.TypeFilter<>(CtClass.class))) {
+//      System.out.println(ctClass.getQualifiedName().replace("$", "."));
+      if (ctClass.getQualifiedName().replace("$", ".").equals(className)) {
+        res = ctClass;
+        break;
+      }
     }
     if (res == null) {
       throw new RuntimeException("class not exist");
@@ -53,18 +60,13 @@ public class SpoonUtil {
    * @return code
    */
   public static String spoonExtractInterface(String path, String interfaceName) {
-    // 创建 Spoon Launcher
     Launcher launcher = new Launcher();
-    // 设置要解析的源代码路径
     launcher.addInputResource(path);
-    // 执行 Spoon 解析
     launcher.run();
-    // 获取 Spoon 模型
     CtModel model = launcher.getModel();
     CtInterface<?> res = null;
-    // 其实只有一个接口，因为只传了单个文件进去
     for (CtInterface<?> ctInterface : model.getElements(new spoon.reflect.visitor.filter.TypeFilter<>(CtInterface.class))) {
-      if (ctInterface.getQualifiedName().equals(interfaceName)) {
+      if (ctInterface.getQualifiedName().replace("$", ".").equals(interfaceName)) {
         res = ctInterface;
         break;
       }

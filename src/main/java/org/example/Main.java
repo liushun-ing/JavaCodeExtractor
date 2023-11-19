@@ -16,10 +16,14 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 
 public class Main {
 
-  static String RootPath = "D:\\pythonfile\\contextmodel\\git_repo_code";
+  static String RootPath = "/data0/shunliu/pythonfile/code_context_model_prediction/git_repo_code";
   static String Class = "class";
   static String Interface = "interface";
   static String Function = "function";
@@ -42,8 +46,14 @@ public class Main {
     File projectFile = new File(projectPath.toUri());
     File[] modelList = projectFile.listFiles();
     assert modelList != null;
-    for (File model : modelList) {
-      if (!model.getName().equals("5840")) {
+    ArrayList<File> files = new ArrayList<>(Arrays.stream(modelList).toList());
+    files.sort(Comparator.comparingInt(o -> Integer.parseInt(o.getName())));
+    boolean q = false;
+    for (File model : files.subList(1, 800)) {
+      if (!q && model.getName().equals("953")) {
+        q = true;
+      }
+      if (!q) {
         continue;
       }
       System.out.println("----------------now progressing: " + model.getName());
@@ -80,23 +90,24 @@ public class Main {
           String refId = vertexAttr.getNamedItem("ref_id").getNodeValue();
           String kind = vertexAttr.getNamedItem("kind").getNodeValue();
           String label = vertexAttr.getNamedItem("label").getNodeValue();
+          System.out.println("--------------" + kind + " " + label);
           // System.out.println("kind: " + kind);
           String finalCode = "";
           if (Class.equals(kind) || Interface.equals(kind)) {
-            repoPath = repoPath.replace("\\doxygen", "");
+            repoPath = repoPath.replace("/doxygen", "");
             String originLabel = label;
-            String originJavaFile = repoPath + "\\src\\" + originLabel.replace(".", "\\") + ".java";
+            String originJavaFile = repoPath + "/src/" + originLabel.replace(".", "/") + ".java";
             // System.out.println("origin_java_file: " + origin_java_file);
             // 可能存在节点是内部类的情况，递归不断往前找，知道找到一个存在的类，就是外部类
             while (!new File(originJavaFile).exists()) {
               int pos = originLabel.lastIndexOf(".");
               originLabel = originLabel.substring(0, pos);
-              originJavaFile = repoPath + "\\src\\" + originLabel.replace(".", "\\") + ".java";
+              originJavaFile = repoPath + "/src/" + originLabel.replace(".", "/") + ".java";
             }
             // 读文件
-            String javaCode = FileUtils.readFileToString(new File(originJavaFile), StandardCharsets.UTF_8);
+//            String javaCode = FileUtils.readFileToString(new File(originJavaFile), StandardCharsets.UTF_8);
             finalCode = Class.equals(kind)
-                ? SpoonUtil.spoonExtractClass(javaCode, label)
+                ? SpoonUtil.spoonExtractClass(originJavaFile, label)
                 : SpoonUtil.spoonExtractInterface(originJavaFile, label);
           } else if (Function.equals(kind) || Variable.equals(kind)) {
             String file = vertexAttr.getNamedItem("file").getNodeValue();
@@ -106,9 +117,9 @@ public class Main {
                 : SpoonUtil.spoonExtractVariable(file, label, line);
           }
           // 将抽取的代码保存到相应的文件
-          String dest_java_file = java_code_dir.getAbsolutePath() + "\\" + model.getName() + '_' + kind + '_' + refId + ".java";
+          String dest_java_file = java_code_dir.getAbsolutePath() + "/" + model.getName() + '_' + kind + '_' + refId + ".java";
           FileUtils.writeStringToFile(new File(dest_java_file), finalCode, StandardCharsets.UTF_8);
-          System.out.println(kind + " " + label + " extraction successes!!!");
+          System.out.println("extraction successes!!!");
         }
       }
     }
