@@ -48,14 +48,15 @@ public class Main {
     assert modelList != null;
     ArrayList<File> files = new ArrayList<>(Arrays.stream(modelList).toList());
     files.sort(Comparator.comparingInt(o -> Integer.parseInt(o.getName())));
-    boolean q = false;
-    for (File model : files.subList(1, 800)) {
-      if (!q && model.getName().equals("953")) {
-        q = true;
-      }
-      if (!q) {
-        continue;
-      }
+//    boolean q = false;
+    for (File model : files.subList(900,3000)) {
+//      System.out.println(model.getName());
+//      if (!q && model.getName().equals("2318")) {
+//        q = true;
+//      }
+//      if (!q) {
+//        continue;
+//      }
       System.out.println("----------------now progressing: " + model.getName());
       String absolutePath = model.getAbsolutePath();
       Path abPath = Paths.get(absolutePath);
@@ -90,7 +91,7 @@ public class Main {
           String refId = vertexAttr.getNamedItem("ref_id").getNodeValue();
           String kind = vertexAttr.getNamedItem("kind").getNodeValue();
           String label = vertexAttr.getNamedItem("label").getNodeValue();
-          System.out.println("--------------" + kind + " " + label);
+//          System.out.println("--------------" + kind + " " + label);
           // System.out.println("kind: " + kind);
           String finalCode = "";
           if (Class.equals(kind) || Interface.equals(kind)) {
@@ -119,7 +120,7 @@ public class Main {
           // 将抽取的代码保存到相应的文件
           String dest_java_file = java_code_dir.getAbsolutePath() + "/" + model.getName() + '_' + kind + '_' + refId + ".java";
           FileUtils.writeStringToFile(new File(dest_java_file), finalCode, StandardCharsets.UTF_8);
-          System.out.println("extraction successes!!!");
+//          System.out.println("extraction successes!!!");
         }
       }
     }
