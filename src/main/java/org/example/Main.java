@@ -1,6 +1,7 @@
 package org.example;
 
-import org.apache.commons.io.FileUtils;
+import com.opencsv.CSVWriter;
+import com.opencsv.CSVWriterBuilder;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -11,26 +12,28 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
 
 public class Main {
 
-  static String RootPath = "/data0/shunliu/pythonfile/code_context_model_prediction/git_repo_code";
+  static String RootPath = "/data0/shunliu/pythonfile/code_context_model_prediction/params_validation/git_repo_code";
   static String Class = "class";
   static String Interface = "interface";
   static String Function = "function";
   static String Variable = "variable";
 
   public static void main(String[] args) throws ParserConfigurationException, IOException, SAXException {
-    extractJavaCode("my_mylyn");
+//    extractJavaCode("my_mylyn");
+//    extractJavaCode("my_pde");
+//    extractJavaCode("my_platform");
+    extractJavaCode("my_ecf");
+
   }
 
   /**
@@ -42,16 +45,16 @@ public class Main {
     // 使用 Paths.get() 创建 Path 对象
     Path rootPath = Paths.get(RootPath);
     // 使用 resolve() 方法拼接路径
-    Path projectPath = rootPath.resolve(projectName);
+    Path projectPath = rootPath.resolve(projectName).resolve("repo_first_3");
     File projectFile = new File(projectPath.toUri());
     File[] modelList = projectFile.listFiles();
     assert modelList != null;
     ArrayList<File> files = new ArrayList<>(Arrays.stream(modelList).toList());
     files.sort(Comparator.comparingInt(o -> Integer.parseInt(o.getName())));
 //    boolean q = false;
-    for (File model : files.subList(900,3000)) {
-//      System.out.println(model.getName());
-//      if (!q && model.getName().equals("2318")) {
+    for (File model : files) {
+      System.out.println(model.getName());
+//      if (!q && model.getName().equals("3191")) {
 //        q = true;
 //      }
 //      if (!q) {
@@ -66,17 +69,14 @@ public class Main {
       if (!modelFile.exists()) {
         continue;
       }
-      // 如果java_code目录已存在，则删除里面的所有文件
-      Path java_code = abPath.resolve("java_code");
-      File java_code_dir = java_code.toFile();
-      if (java_code_dir.exists()) {
-        FileUtil.deleteFile(java_code_dir);
-      }
-      java_code_dir.mkdir();
       // 读取xml文件
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       DocumentBuilder builder = factory.newDocumentBuilder();
       Document root = builder.parse(modelFile.getAbsolutePath());
+      // 标题行
+      String[] titleRow = {"id", "code"};
+      // 数据行
+      ArrayList<String[]> dataRows = new ArrayList<>();
       NodeList graphList = root.getElementsByTagName("graph");
       for (int i = 0; i < graphList.getLength(); i++) {
         Node graph = graphList.item(i);
@@ -92,13 +92,13 @@ public class Main {
           String kind = vertexAttr.getNamedItem("kind").getNodeValue();
           String label = vertexAttr.getNamedItem("label").getNodeValue();
 //          System.out.println("--------------" + kind + " " + label);
-          // System.out.println("kind: " + kind);
+//          System.out.println("kind: " + kind);
           String finalCode = "";
           if (Class.equals(kind) || Interface.equals(kind)) {
             repoPath = repoPath.replace("/doxygen", "");
             String originLabel = label;
             String originJavaFile = repoPath + "/src/" + originLabel.replace(".", "/") + ".java";
-            // System.out.println("origin_java_file: " + origin_java_file);
+//            System.out.println("origin_java_file: " + originJavaFile);
             // 可能存在节点是内部类的情况，递归不断往前找，知道找到一个存在的类，就是外部类
             while (!new File(originJavaFile).exists()) {
               int pos = originLabel.lastIndexOf(".");
@@ -117,12 +117,23 @@ public class Main {
                 ? SpoonUtil.spoonExtractFunction(file, label, line)
                 : SpoonUtil.spoonExtractVariable(file, label, line);
           }
-          // 将抽取的代码保存到相应的文件
-          String dest_java_file = java_code_dir.getAbsolutePath() + "/" + model.getName() + '_' + kind + '_' + refId + ".java";
-          FileUtils.writeStringToFile(new File(dest_java_file), finalCode, StandardCharsets.UTF_8);
+          // 将抽取的代码保存到tsv
+          String _id = model.getName() + '_' + kind + '_' + refId;
+          dataRows.add(new String[]{_id, finalCode});
 //          System.out.println("extraction successes!!!");
         }
       }
+      OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(absolutePath + "/" + "my_java_codes.tsv"), Charset.forName("UTF-8"));
+      // 1. 通过new CSVWriter对象的方式直接创建CSVWriter对象
+      // CSVWriter csvWriter = new CSVWriter(writer);
+      // 2. 通过CSVWriterBuilder构造器构建CSVWriter对象
+      CSVWriter csvWriter = (CSVWriter) new CSVWriterBuilder(writer).withSeparator('\t').build();
+      // 写入标题行
+      csvWriter.writeNext(titleRow, false);
+      // 写入数据行
+      csvWriter.writeAll(dataRows, false);
+      csvWriter.close();
+      System.out.println(model.getName() + " done~~~~~");
     }
   }
 
