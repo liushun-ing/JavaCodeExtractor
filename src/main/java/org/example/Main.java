@@ -14,6 +14,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -29,10 +30,10 @@ public class Main {
   static String Variable = "variable";
 
   public static void main(String[] args) throws ParserConfigurationException, IOException, SAXException {
-//    extractJavaCode("my_mylyn");
+    extractJavaCode("my_mylyn");
 //    extractJavaCode("my_pde");
 //    extractJavaCode("my_platform");
-    extractJavaCode("my_ecf");
+//    extractJavaCode("my_ecf");
 
   }
 
@@ -51,15 +52,15 @@ public class Main {
     assert modelList != null;
     ArrayList<File> files = new ArrayList<>(Arrays.stream(modelList).toList());
     files.sort(Comparator.comparingInt(o -> Integer.parseInt(o.getName())));
-//    boolean q = false;
+    boolean q = false;
     for (File model : files) {
-      System.out.println(model.getName());
-//      if (!q && model.getName().equals("3191")) {
-//        q = true;
-//      }
-//      if (!q) {
-//        continue;
-//      }
+//      System.out.println(model.getName());
+      if (!q && model.getName().equals("2138")) {
+        q = true;
+      }
+      if (!q) {
+        continue;
+      }
       System.out.println("----------------now progressing: " + model.getName());
       String absolutePath = model.getAbsolutePath();
       Path abPath = Paths.get(absolutePath);
@@ -123,7 +124,7 @@ public class Main {
 //          System.out.println("extraction successes!!!");
         }
       }
-      OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(absolutePath + "/" + "my_java_codes.tsv"), Charset.forName("UTF-8"));
+      OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(absolutePath + "/" + "my_java_codes.tsv"), StandardCharsets.UTF_8);
       // 1. 通过new CSVWriter对象的方式直接创建CSVWriter对象
       // CSVWriter csvWriter = new CSVWriter(writer);
       // 2. 通过CSVWriterBuilder构造器构建CSVWriter对象
