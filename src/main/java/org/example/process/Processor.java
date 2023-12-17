@@ -1,20 +1,28 @@
-package org.example.tokenizer;
+package org.example.process;
 
 import com.github.javaparser.JavaToken;
-import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.Name;
+import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.visitor.GenericVisitor;
+import com.github.javaparser.ast.visitor.VoidVisitor;
+import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 
-public class JavaParserToken {
+public class Processor {
 
   static String Class = "class";
   static String Interface = "interface";
   static String Function = "function";
   static String Variable = "variable";
+
+
 
   /**
    * transfer java source code to java tokens joined by " "
@@ -23,7 +31,7 @@ public class JavaParserToken {
    * @param _id element id
    * @return a string represents java tokens joined by " "
    */
-  public static String getJavaTokens(String javaCode, String _id) {
+  public static String process(String javaCode, String _id) {
     int firstIndex = _id.indexOf('_');
     _id = _id.substring(firstIndex + 1);
     int second_index = _id.indexOf('_');
@@ -44,34 +52,37 @@ public class JavaParserToken {
       prefix = javaCode.substring(0, i);
       javaCode = javaCode.substring(i);
     }
+    String finalCode = "";
 //    StaticJavaParser.getParserConfiguration().setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_18);
     CompilationUnit compilationUnit = StaticJavaParser.parse(javaCode);
     // 获取所有 tokens
-    TokenRange javaTokens = compilationUnit.getTokenRange().orElse(null);
-    ArrayList<String> tokens = new ArrayList<>();
-    if (javaTokens != null) {
-      // 遍历所有 token
-      for (JavaToken token : javaTokens) {
-        if(!" ".equals(token.getText()) && !"".equals(token.getText()) && token.getText() != null && !"\n".equals(token.getText())) {
-          // 解决分词的时候字符串常量里有空格，导致分词失败
-          if(token.getKind() == 93) {
-            tokens.add("<STRING_LITERAL>");
-          } else {
-            tokens.add(token.getText());
-          }
-        }
-      }
-    }
+    compilationUnit.accept(new MyVisitor(), null);
     if(Function.equals(t) || Variable.equals(t)) {
-      tokens.remove(0);
-      tokens.remove(0);
-      tokens.remove(0);
-      tokens.remove(tokens.size() - 1);
+      if (_id.contains("interfaceorg")) {
+        finalCode = compilationUnit.toString().substring(13, compilationUnit.toString().length() - 2);
+      } else {
+        finalCode = compilationUnit.toString().substring(9, compilationUnit.toString().length() - 2);
+      }
+    } else if (Class.equals(t) || Interface.equals(t)) {
+      finalCode = prefix + compilationUnit;
     }
-    String joinTokens = StringUtils.join(tokens, " ");
-    if (Class.equals(t) || Interface.equals(t)) {
-      joinTokens = prefix + joinTokens;
+    return finalCode;
+  }
+
+  private static class MyVisitor extends VoidVisitorAdapter {
+    @Override
+    public void visit(FieldDeclaration n, Object arg) {
+      super.visit(n, arg);
+      n.getVariables().forEach(v ->
+          v.getInitializer().ifPresent(i -> {
+            v.setInitializer("<INIT>");
+          }));
     }
-    return joinTokens;
+
+    @Override
+    public void visit(StringLiteralExpr n, Object arg) {
+      super.visit(n, arg);
+      n.setString("<STRING_LITERAL>");
+    }
   }
 }

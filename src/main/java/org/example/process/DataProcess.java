@@ -1,4 +1,4 @@
-package org.example.tokenizer;
+package org.example.process;
 
 import com.opencsv.*;
 import com.opencsv.exceptions.CsvException;
@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-public class ExtractJavaTokens {
+public class DataProcess {
 
   static String RootPath = "/data0/shunliu/pythonfile/code_context_model_prediction/params_validation/git_repo_code";
 
@@ -39,15 +39,15 @@ public class ExtractJavaTokens {
     assert modelList != null;
     ArrayList<File> files = new ArrayList<>(Arrays.stream(modelList).toList());
     files.sort(Comparator.comparingInt(o -> Integer.parseInt(o.getName())));
-//    boolean q = false;
+    boolean q = false;
     for (File model : files) {
 //      System.out.println(model.getName());
-//      if (!q && model.getName().equals("1212")) {
-//        q = true;
-//      }
-//      if (!q) {
-//        continue;
-//      }
+      if (!q && model.getName().equals("1")) {
+        q = true;
+      }
+      if (!q) {
+        continue;
+      }
       System.out.println("----------------now progressing: " + model.getName());
       String absolutePath = model.getAbsolutePath();
       Path abPath = Paths.get(absolutePath);
@@ -71,12 +71,12 @@ public class ExtractJavaTokens {
       for (String[] s : list) {
         System.out.println(s[0]);
         String codeString = s[1];
-        String finalTokens = JavaParserToken.getJavaTokens(codeString, s[0]);
-        dataRows.add(new String[]{s[0], finalTokens});
+        String finalCodes = Processor.process(codeString, s[0]);
+        dataRows.add(new String[]{s[0], finalCodes});
       }
       csvReader.close();
 
-      OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(absolutePath + "/" + "java_tokens.tsv"), StandardCharsets.UTF_8);
+      OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(absolutePath + "/" + "processed_java_codes.tsv"), StandardCharsets.UTF_8);
       // 1. 通过new CSVWriter对象的方式直接创建CSVWriter对象
       // CSVWriter csvWriter = new CSVWriter(writer);
       // 2. 通过CSVWriterBuilder构造器构建CSVWriter对象
