@@ -1,6 +1,7 @@
 package org.example.tokenizer;
 
 import com.github.javaparser.JavaToken;
+import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.CompilationUnit;
@@ -10,13 +11,40 @@ import java.util.ArrayList;
 
 public class JavaParserToken {
 
+  static String Class = "class";
+  static String Interface = "interface";
   static String Function = "function";
   static String Variable = "variable";
 
-  public static String getJavaTokens(String javaCode, String t) {
+  /**
+   * transfer java source code to java tokens joined by " "
+   *
+   * @param javaCode java source code
+   * @param _id element id
+   * @return a string represents java tokens joined by " "
+   */
+  public static String getJavaTokens(String javaCode, String _id) {
+    int firstIndex = _id.indexOf('_');
+    _id = _id.substring(firstIndex + 1);
+    int second_index = _id.indexOf('_');
+    String t = _id.substring(0, second_index);
+    String prefix = "";
     if(Function.equals(t) || Variable.equals(t)) {
-      javaCode = "class A {" + javaCode + "}";
+      if (_id.contains("interfaceorg")) {
+        javaCode = "interface A {" + javaCode + "}";
+      } else {
+        javaCode = "class A {" + javaCode + "}";
+      }
+    } else if(Class.equals(t)) {
+      int i = javaCode.indexOf(Class);
+      prefix = javaCode.substring(0, i);
+      javaCode = javaCode.substring(i);
+    } else {
+      int i = javaCode.indexOf(Interface);
+      prefix = javaCode.substring(0, i);
+      javaCode = javaCode.substring(i);
     }
+//    StaticJavaParser.getParserConfiguration().setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_18);
     CompilationUnit compilationUnit = StaticJavaParser.parse(javaCode);
     // 获取所有 tokens
     TokenRange javaTokens = compilationUnit.getTokenRange().orElse(null);
@@ -24,7 +52,12 @@ public class JavaParserToken {
     if (javaTokens != null) {
       // 遍历所有 token
       for (JavaToken token : javaTokens) {
-        if(!" ".equals(token.getText()) && !"".equals(token.getText()) && token.getText() != null) {
+        if(!" ".equals(token.getText()) && !"".equals(token.getText()) && token.getText() != null && !"\n".equals(token.getText())) {
+//          if(token.getKind() == 93) {
+//            tokens.add("\"<STRING_LITERAL>\"");
+//          } else {
+//            tokens.add(token.getText());
+//          }
           tokens.add(token.getText());
         }
       }
@@ -35,6 +68,10 @@ public class JavaParserToken {
       tokens.remove(0);
       tokens.remove(tokens.size() - 1);
     }
-    return StringUtils.join(tokens, " ");
+    String joinTokens = StringUtils.join(tokens, " ");
+    if (Class.equals(t) || Interface.equals(t)) {
+      joinTokens = prefix + joinTokens;
+    }
+    return joinTokens;
   }
 }

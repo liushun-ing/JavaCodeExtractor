@@ -18,11 +18,10 @@ public class ExtractJavaTokens {
   static String RootPath = "/data0/shunliu/pythonfile/code_context_model_prediction/params_validation/git_repo_code";
 
   public static void main(String[] args) throws IOException, CsvException {
-//    extractJavaCode("my_mylyn");
-//    extractJavaCode("my_pde");
-//    extractJavaCode("my_platform");
     extractJavaTokens("my_ecf");
-
+    extractJavaTokens("my_pde");
+//    extractJavaTokens("my_platform");
+//    extractJavaTokens("my_mylyn");
   }
 
   /**
@@ -42,7 +41,8 @@ public class ExtractJavaTokens {
     files.sort(Comparator.comparingInt(o -> Integer.parseInt(o.getName())));
 //    boolean q = false;
     for (File model : files) {
-//      if (!q && model.getName().equals("2138")) {
+//      System.out.println(model.getName());
+//      if (!q && model.getName().equals("1212")) {
 //        q = true;
 //      }
 //      if (!q) {
@@ -63,18 +63,15 @@ public class ExtractJavaTokens {
       ArrayList<String[]> dataRows = new ArrayList<>();
 
       InputStreamReader reader = new InputStreamReader(new FileInputStream(codesFile), StandardCharsets.UTF_8);
-      CSVParser build = new CSVParserBuilder().withSeparator('\t').build();
-      CSVReader csvReader = new CSVReaderBuilder(reader).withCSVParser(build).withSkipLines(1).build();
+//      CSVParser build = new CSVParserBuilder().withSeparator('\t').build();
+      // 解决读取时转义字符的\丢失问题
+      RFC4180Parser rFC4180Parser = new RFC4180ParserBuilder().withSeparator('\t').build();
+      CSVReader csvReader = new CSVReaderBuilder(reader).withCSVParser(rFC4180Parser).withSkipLines(1).build();
       List<String[]> list = csvReader.readAll();
       for (String[] s : list) {
         System.out.println(s[0]);
-        String _id = s[0];
         String codeString = s[1];
-        int firstIndex = _id.indexOf('_');
-        _id = _id.substring(firstIndex + 1);
-        int second_index = _id.indexOf('_');
-        String t = _id.substring(0, second_index);
-        String finalTokens = JavaParserToken.getJavaTokens(codeString, t);
+        String finalTokens = JavaParserToken.getJavaTokens(codeString, s[0]);
         dataRows.add(new String[]{s[0], finalTokens});
       }
       csvReader.close();

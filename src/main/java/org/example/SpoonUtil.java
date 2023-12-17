@@ -72,6 +72,7 @@ public class SpoonUtil {
       }
     }
     if (res == null) {
+      System.out.println(path);
       throw new RuntimeException("interface not exist");
     }
     List<CtAnnotation<? extends Annotation>> annotations = res.getAnnotations();

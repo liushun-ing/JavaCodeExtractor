@@ -55,7 +55,7 @@ public class Main {
     boolean q = false;
     for (File model : files) {
 //      System.out.println(model.getName());
-      if (!q && model.getName().equals("2138")) {
+      if (!q && model.getName().equals("3589")) {
         q = true;
       }
       if (!q) {
@@ -83,7 +83,7 @@ public class Main {
         Node graph = graphList.item(i);
         NamedNodeMap attributes = graph.getAttributes();
         String repoPath = attributes.getNamedItem("repo_path").getNodeValue();
-        System.out.println("repoPath: " + repoPath);
+//        System.out.println("repoPath: " + repoPath);
         NodeList vertices = graph.getFirstChild().getChildNodes();
         // 分析每个vertex,提取代码
         for (int j = 0; j < vertices.getLength(); j++) {
