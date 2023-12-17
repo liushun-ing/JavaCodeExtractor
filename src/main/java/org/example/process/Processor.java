@@ -75,7 +75,7 @@ public class Processor {
       super.visit(n, arg);
       n.getVariables().forEach(v ->
           v.getInitializer().ifPresent(i -> {
-            v.setInitializer("<INIT>");
+            v.setInitializer("null");
           }));
     }
 

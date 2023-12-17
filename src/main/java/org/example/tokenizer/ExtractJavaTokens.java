@@ -19,8 +19,8 @@ public class ExtractJavaTokens {
 
   public static void main(String[] args) throws IOException, CsvException {
     extractJavaTokens("my_ecf");
-    extractJavaTokens("my_pde");
-    extractJavaTokens("my_platform");
+//    extractJavaTokens("my_pde");
+//    extractJavaTokens("my_platform");
 //    extractJavaTokens("my_mylyn");
   }
 
@@ -51,7 +51,7 @@ public class ExtractJavaTokens {
       System.out.println("----------------now progressing: " + model.getName());
       String absolutePath = model.getAbsolutePath();
       Path abPath = Paths.get(absolutePath);
-      Path resolve = abPath.resolve("my_java_codes.tsv");
+      Path resolve = abPath.resolve("processed_java_codes.tsv");
       File codesFile = resolve.toFile();
       // 如果model不存在，直接跳过
       if (!codesFile.exists()) {

@@ -55,6 +55,11 @@ public class JavaParserToken {
         if(!" ".equals(token.getText()) && !"".equals(token.getText()) && token.getText() != null && !"\n".equals(token.getText())) {
           // 解决分词的时候字符串常量里有空格，导致分词失败
           if(token.getKind() == 93) {
+//            if("<INIT>".equals(token.getText())) {
+//              tokens.add("<INIT>");
+//            } else {
+//              tokens.add("<STRING_LITERAL>");
+//            }
             tokens.add("<STRING_LITERAL>");
           } else {
             tokens.add(token.getText());
