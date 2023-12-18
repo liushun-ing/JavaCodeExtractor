@@ -21,11 +21,13 @@ public class DataProcess {
     extractJavaTokens("my_ecf");
     extractJavaTokens("my_pde");
     extractJavaTokens("my_platform");
-//    extractJavaTokens("my_mylyn");
+    extractJavaTokens("my_mylyn");
   }
 
   /**
-   * extract java tokens for a project
+   * data process
+   * field initialization: all non literal -> 0, true, '0'; literal keep the same; all reference -> null
+   * String -> < STRING_LITERAL >
    *
    * @param projectName project name ['my_mylyn', 'my_platform',...]
    */
@@ -39,15 +41,15 @@ public class DataProcess {
     assert modelList != null;
     ArrayList<File> files = new ArrayList<>(Arrays.stream(modelList).toList());
     files.sort(Comparator.comparingInt(o -> Integer.parseInt(o.getName())));
-    boolean q = false;
+//    boolean q = false;
     for (File model : files) {
 //      System.out.println(model.getName());
-      if (!q && model.getName().equals("1")) {
-        q = true;
-      }
-      if (!q) {
-        continue;
-      }
+//      if (!q && model.getName().equals("5571")) {
+//        q = true;
+//      }
+//      if (!q) {
+//        continue;
+//      }
       System.out.println("----------------now progressing: " + model.getName());
       String absolutePath = model.getAbsolutePath();
       Path abPath = Paths.get(absolutePath);
@@ -69,7 +71,7 @@ public class DataProcess {
       CSVReader csvReader = new CSVReaderBuilder(reader).withCSVParser(rFC4180Parser).withSkipLines(1).build();
       List<String[]> list = csvReader.readAll();
       for (String[] s : list) {
-        System.out.println(s[0]);
+//        System.out.println(s[0]);
         String codeString = s[1];
         String finalCodes = Processor.process(codeString, s[0]);
         dataRows.add(new String[]{s[0], finalCodes});
@@ -86,7 +88,7 @@ public class DataProcess {
       // 写入数据行
       csvWriter.writeAll(dataRows, false);
       csvWriter.close();
-      System.out.println(model.getName() + " done~~~~~");
+//      System.out.println(model.getName() + " done~~~~~");
     }
   }
 

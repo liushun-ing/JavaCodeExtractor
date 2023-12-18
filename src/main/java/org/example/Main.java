@@ -30,10 +30,10 @@ public class Main {
   static String Variable = "variable";
 
   public static void main(String[] args) throws ParserConfigurationException, IOException, SAXException {
+    extractJavaCode("my_ecf");
+    extractJavaCode("my_pde");
+    extractJavaCode("my_platform");
     extractJavaCode("my_mylyn");
-//    extractJavaCode("my_pde");
-//    extractJavaCode("my_platform");
-//    extractJavaCode("my_ecf");
 
   }
 
@@ -52,15 +52,15 @@ public class Main {
     assert modelList != null;
     ArrayList<File> files = new ArrayList<>(Arrays.stream(modelList).toList());
     files.sort(Comparator.comparingInt(o -> Integer.parseInt(o.getName())));
-    boolean q = false;
+//    boolean q = false;
     for (File model : files) {
 //      System.out.println(model.getName());
-      if (!q && model.getName().equals("3589")) {
-        q = true;
-      }
-      if (!q) {
-        continue;
-      }
+//      if (!q && model.getName().equals("5578")) {
+//        q = true;
+//      }
+//      if (!q) {
+//        continue;
+//      }
       System.out.println("----------------now progressing: " + model.getName());
       String absolutePath = model.getAbsolutePath();
       Path abPath = Paths.get(absolutePath);

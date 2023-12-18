@@ -1,19 +1,10 @@
 package org.example.process;
 
-import com.github.javaparser.JavaToken;
 import com.github.javaparser.StaticJavaParser;
-import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.FieldDeclaration;
-import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
-import com.github.javaparser.ast.visitor.GenericVisitor;
-import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.ArrayList;
 
 public class Processor {
 
@@ -22,15 +13,6 @@ public class Processor {
   static String Function = "function";
   static String Variable = "variable";
 
-
-
-  /**
-   * transfer java source code to java tokens joined by " "
-   *
-   * @param javaCode java source code
-   * @param _id element id
-   * @return a string represents java tokens joined by " "
-   */
   public static String process(String javaCode, String _id) {
     int firstIndex = _id.indexOf('_');
     _id = _id.substring(firstIndex + 1);
@@ -75,7 +57,21 @@ public class Processor {
       super.visit(n, arg);
       n.getVariables().forEach(v ->
           v.getInitializer().ifPresent(i -> {
-            v.setInitializer("null");
+            // 针对非字面量的进行替换
+            if(!i.isLiteralExpr()) {
+              // 引用类型直接替换为 null
+              if (v.getType().isReferenceType()) {
+                v.setInitializer("null");
+              } else {
+                String typeString = v.getType().asString();
+                // boolean, byte, char, short, int, long,float,double
+                switch (typeString) {
+                  case "char" -> v.setInitializer("'0'");
+                  case "boolean" -> v.setInitializer("true");
+                  default -> v.setInitializer("0");
+                }
+              }
+            }
           }));
     }
 

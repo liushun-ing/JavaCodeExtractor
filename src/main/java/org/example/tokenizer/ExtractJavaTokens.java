@@ -19,9 +19,9 @@ public class ExtractJavaTokens {
 
   public static void main(String[] args) throws IOException, CsvException {
     extractJavaTokens("my_ecf");
-//    extractJavaTokens("my_pde");
-//    extractJavaTokens("my_platform");
-//    extractJavaTokens("my_mylyn");
+    extractJavaTokens("my_pde");
+    extractJavaTokens("my_platform");
+    extractJavaTokens("my_mylyn");
   }
 
   /**
@@ -69,7 +69,7 @@ public class ExtractJavaTokens {
       CSVReader csvReader = new CSVReaderBuilder(reader).withCSVParser(rFC4180Parser).withSkipLines(1).build();
       List<String[]> list = csvReader.readAll();
       for (String[] s : list) {
-        System.out.println(s[0]);
+//        System.out.println(s[0]);
         String codeString = s[1];
         String finalTokens = JavaParserToken.getJavaTokens(codeString, s[0]);
         dataRows.add(new String[]{s[0], finalTokens});
@@ -86,7 +86,7 @@ public class ExtractJavaTokens {
       // 写入数据行
       csvWriter.writeAll(dataRows, false);
       csvWriter.close();
-      System.out.println(model.getName() + " done~~~~~");
+//      System.out.println(model.getName() + " done~~~~~");
     }
   }
 
